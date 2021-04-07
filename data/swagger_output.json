@@ -1,0 +1,1453 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "帶你學到會的線上課程  | 六角學院",
+    "description": "打破影音課程售後不理，我們在線上等著你。"
+  },
+  "host": "",
+  "basePath": "/",
+  "tags": [],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "securityDefinitions": {
+    "apiKeyAuth": {
+      "type": "apiKey",
+      "in": "headers",
+      "name": "authorization",
+      "description": "請輸入您在申請 API 時底下的 UID。"
+    }
+  },
+  "consumes": [],
+  "produces": [],
+  "paths": {
+    "/api/livejs/v1/customer/{api_path}/products": {
+      "get": {
+        "tags": [
+          "產品相關(客戶)"
+        ],
+        "description": "取得產品列表",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "若成功取得則會回傳一個物件陣列的產品資料列表。",
+            "schema": {
+              "$ref": "#/definitions/getProduct"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      }
+    },
+    "/api/livejs/v1/customer/{api_path}/carts": {
+      "get": {
+        "tags": [
+          "購物車相關(客戶)"
+        ],
+        "description": "取得購物車列表",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": " 若取得成功將會回傳一個物件陣列，原價總金額與販售總金額會由後端計算。<br/> 比較需要注意的是 productId 將會對產品列表 API 的 ID。 ",
+            "schema": {
+              "$ref": "#/definitions/getCarts"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "購物車相關(客戶)"
+        ],
+        "description": "加入購物車",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "data",
+            "in": "body",
+            "description": " 加入購物車時只需要傳送產品 ID 與數量即可加入完成。 <br/> 請注意，若重複加入相同的產品 ID 將會自動合併產品，並依照本次傳送的 quantity 數量為主並覆蓋原本的數量。<br/> 以下為範例結構(請注意型別問題)。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "example": "產品 ID (String)"
+                    },
+                    "quantity": {
+                      "type": "number",
+                      "example": 5
+                    }
+                  },
+                  "required": [
+                    "productId",
+                    "quantity"
+                  ]
+                }
+              }
+            },
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "加入購物車之後將會回傳新的購物車列表，因此可以不用再執行「取得購物車列表」的行為。",
+            "schema": {
+              "$ref": "#/definitions/addCarts"
+            }
+          },
+          "400": {
+            "description": "請注意產品數量 (quantity) 不得小於 1。",
+            "schema": {
+              "$ref": "#/definitions/cartQuantity"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "購物車相關(客戶)"
+        ],
+        "description": "編輯購物車產品數量",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "data",
+            "in": "body",
+            "type": "object",
+            "description": " 編輯購物車特定產品數量。<br/> 請注意，編輯購物車內產品數量所使用的 ID 是購物車列表底下的 ID，因此與 productId 是不同的。<br/> 以下為範例結構(請注意型別問題)。",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "購物車 ID (String)"
+                    },
+                    "quantity": {
+                      "type": "number",
+                      "example": 6
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "quantity"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "編輯購物車內的產品數量後將會回傳新的購物車列表，因此可以不用再執行「取得購物車列表」的行為。",
+            "schema": {
+              "$ref": "#/definitions/editCarts"
+            }
+          },
+          "400": {
+            "description": "請注意產品數量 (quantity) 不得小於 1。",
+            "schema": {
+              "$ref": "#/definitions/cartQuantity"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "購物車相關(客戶)"
+        ],
+        "description": "清除購物車內全部產品",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "清除全部購物車商品後，將會回傳新的購物車列表。",
+            "schema": {
+              "$ref": "#/definitions/deleteCartAll"
+            }
+          },
+          "400": {
+            "description": "當若購物車已經是空的時候，就會回傳該訊息。",
+            "schema": {
+              "$ref": "#/definitions/deleteCartAllError"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      }
+    },
+    "/api/livejs/v1/customer/{api_path}/carts/{id}": {
+      "delete": {
+        "tags": [
+          "購物車相關(客戶)"
+        ],
+        "description": " 刪除購物車內特定產品<br/> 刪除購物車特定產品後將會回傳新的購物車列表。<br/> 請注意，請不要傳送產品 ID (productId) 而是購物車的 ID。 ",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "要刪除的訂單 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除購物車特定產品後將會回傳新的購物車列表。",
+            "schema": {
+              "$ref": "#/definitions/deleteCarts"
+            }
+          },
+          "400": {
+            "description": "若購物車內已無該商品則會回傳該資料。",
+            "schema": {
+              "$ref": "#/definitions/deleteCartError"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      }
+    },
+    "/api/livejs/v1/customer/{api_path}/orders": {
+      "post": {
+        "tags": [
+          "訂單相關(客戶)"
+        ],
+        "description": "送出購買訂單",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "data",
+            "in": "body",
+            "type": "object",
+            "description": " 以下欄位皆為必填的使用者資訊</br> 送出訂單後將會回傳訂單結果(請注意型別問題)。",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "六角學院"
+                        },
+                        "tel": {
+                          "type": "string",
+                          "example": "07-5313506"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "hexschool@hexschool.com"
+                        },
+                        "address": {
+                          "type": "string",
+                          "example": "高雄市六角學院路"
+                        },
+                        "payment": {
+                          "type": "string",
+                          "example": "Apple Pay"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/addOrders"
+            },
+            "description": "OK"
+          },
+          "400": {
+            "description": "缺少 user 物件時就會出現該回應。",
+            "schema": {
+              "$ref": "#/definitions/ordersUserDataError"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        }
+      }
+    },
+    "/api/livejs/v1/admin/{api_path}/orders": {
+      "get": {
+        "tags": [
+          "訂單相關(管理者)"
+        ],
+        "description": "取得訂單列表",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "取得訂單列表",
+            "schema": {
+              "$ref": "#/definitions/getOrders"
+            }
+          },
+          "403": {
+            "description": "若 API 非本人使用則會出現該回應。",
+            "schema": {
+              "$ref": "#/definitions/checkPolicyAPI"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "訂單相關(管理者)"
+        ],
+        "description": "修改訂單狀態",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "data",
+            "in": "body",
+            "type": "object",
+            "description": " id 為訂單 ID，paid 則是訂單狀態。<br/> 訂單狀態可任意修改成已處理 (true) 或未處理 (false) 以下為範例結構(請注意型別問題)。",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "訂單 ID (String)"
+                    },
+                    "paid": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "修改成功之後將會回傳一整個訂單列表。",
+            "schema": {
+              "$ref": "#/definitions/editOrders"
+            }
+          },
+          "400": {
+            "description": "若找不到該訂單時，則會回傳此狀態。",
+            "schema": {
+              "$ref": "#/definitions/editOrdersError"
+            }
+          },
+          "403": {
+            "description": "若 API 非本人使用則會出現該回應。",
+            "schema": {
+              "$ref": "#/definitions/checkPolicyAPI"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "訂單相關(管理者)"
+        ],
+        "description": "刪除全部訂單",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除訂單列表成功後將會回傳空的訂單列表",
+            "schema": {
+              "$ref": "#/definitions/deleteOrdersAll"
+            }
+          },
+          "400": {
+            "description": "當若訂單列表已經是空的時候，就會回傳該訊息。",
+            "schema": {
+              "$ref": "#/definitions/deleteOrdersAllError"
+            }
+          },
+          "403": {
+            "description": "若 API 非本人使用則會出現該回應。",
+            "schema": {
+              "$ref": "#/definitions/checkPolicyAPI"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/livejs/v1/admin/{api_path}/orders/{id}": {
+      "delete": {
+        "tags": [
+          "訂單相關(管理者)"
+        ],
+        "description": "刪除特定訂單",
+        "parameters": [
+          {
+            "name": "api_path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "使用者 API 路徑"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除特定訂單列表成功後將會回傳一整個訂單列表。",
+            "schema": {
+              "$ref": "#/definitions/deleteOrders"
+            }
+          },
+          "400": {
+            "description": "若找不到該訂單時，則會回傳此狀態。",
+            "schema": {
+              "$ref": "#/definitions/deleteOrdersError"
+            }
+          },
+          "403": {
+            "description": "若 API 非本人使用則會出現該回應。",
+            "schema": {
+              "$ref": "#/definitions/checkPolicyAPI"
+            }
+          },
+          "404": {
+            "description": "通常會出現這個狀態碼大多是沒有申請 API 路徑導致，因此建議可以檢查一下 API 路徑是否正確，若 API 路徑是正確的話可以檢查一下 Url 是否正確。",
+            "schema": {
+              "$ref": "#/definitions/checkAPIPath"
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "getProduct": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "example": "產品分類 (String)"
+              },
+              "image": {
+                "type": "string",
+                "example": "產品圖片 (String)"
+              },
+              "id": {
+                "type": "string",
+                "example": "產品ID  (String)"
+              },
+              "title": {
+                "type": "string",
+                "example": "產品名稱  (String)"
+              },
+              "origin_price": {
+                "type": "string",
+                "example": "產品原始價錢 (Number)"
+              },
+              "price": {
+                "type": "string",
+                "example": "產品銷售價錢 (Number)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "getCarts": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "carts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quantity": {
+                "type": "string",
+                "example": "數量 (Number)"
+              },
+              "id": {
+                "type": "string",
+                "example": "該購物車資料 ID (String)"
+              },
+              "product": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "產品分類 (String)"
+                  },
+                  "image": {
+                    "type": "string",
+                    "example": "產品圖片 (String)"
+                  },
+                  "id": {
+                    "type": "string",
+                    "example": "產品ID  (String)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "產品名稱  (String)"
+                  },
+                  "origin_price": {
+                    "type": "string",
+                    "example": "產品原始價錢 (Number)"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "產品銷售價錢 (Number)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "total": {
+          "type": "string",
+          "example": "原始價錢總計 (Number)"
+        },
+        "finalTotal": {
+          "type": "string",
+          "example": "銷售價錢總計 (Number)"
+        }
+      }
+    },
+    "addCarts": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "carts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quantity": {
+                "type": "string",
+                "example": "數量 (Number)"
+              },
+              "id": {
+                "type": "string",
+                "example": "該購物車資料 ID (String)"
+              },
+              "product": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "產品分類 (String)"
+                  },
+                  "image": {
+                    "type": "string",
+                    "example": "產品圖片 (String)"
+                  },
+                  "id": {
+                    "type": "string",
+                    "example": "產品ID  (String)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "產品名稱  (String)"
+                  },
+                  "origin_price": {
+                    "type": "string",
+                    "example": "產品原始價錢 (Number)"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "產品銷售價錢 (Number)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "total": {
+          "type": "string",
+          "example": "原始價錢總計 (Number)"
+        },
+        "finalTotal": {
+          "type": "string",
+          "example": "銷售價錢總計 (Number)"
+        }
+      }
+    },
+    "editCarts": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "carts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quantity": {
+                "type": "string",
+                "example": "數量 (Number)"
+              },
+              "id": {
+                "type": "string",
+                "example": "該購物車資料 ID (String)"
+              },
+              "product": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "產品分類 (String)"
+                  },
+                  "image": {
+                    "type": "string",
+                    "example": "產品圖片 (String)"
+                  },
+                  "id": {
+                    "type": "string",
+                    "example": "產品ID  (String)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "產品名稱  (String)"
+                  },
+                  "origin_price": {
+                    "type": "string",
+                    "example": "產品原始價錢 (Number)"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "產品銷售價錢 (Number)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "total": {
+          "type": "string",
+          "example": "原始價錢總計 (Number)"
+        },
+        "finalTotal": {
+          "type": "string",
+          "example": "銷售價錢總計 (Number)"
+        }
+      }
+    },
+    "deleteCarts": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "carts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quantity": {
+                "type": "string",
+                "example": "數量 (Number)"
+              },
+              "id": {
+                "type": "string",
+                "example": "該購物車資料 ID (String)"
+              },
+              "product": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "產品分類 (String)"
+                  },
+                  "image": {
+                    "type": "string",
+                    "example": "產品圖片 (String)"
+                  },
+                  "id": {
+                    "type": "string",
+                    "example": "產品ID  (String)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "產品名稱  (String)"
+                  },
+                  "origin_price": {
+                    "type": "string",
+                    "example": "產品原始價錢 (Number)"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "產品銷售價錢 (Number)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "total": {
+          "type": "string",
+          "example": "原始價錢總計 (Number)"
+        },
+        "finalTotal": {
+          "type": "string",
+          "example": "銷售價錢總計 (Number)"
+        }
+      }
+    },
+    "deleteCartAll": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "carts": {
+          "type": "array",
+          "items": {}
+        },
+        "total": {
+          "type": "number",
+          "example": 0
+        },
+        "finalTotal": {
+          "type": "number",
+          "example": 0
+        },
+        "message": {
+          "type": "string",
+          "example": "購物車產品已全部清空。 (*´▽`*)"
+        }
+      }
+    },
+    "cartQuantity": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "產品數量不可小於 1 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "addOrders": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "quantity": {
+          "type": "number",
+          "example": 10
+        },
+        "id": {
+          "type": "string",
+          "example": "8IIgLIdV2X19WAvEGvXQ"
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "六角學院"
+            },
+            "tel": {
+              "type": "string",
+              "example": "07-5313506"
+            },
+            "email": {
+              "type": "string",
+              "example": "hexschool@hexschool.com"
+            },
+            "address": {
+              "type": "string",
+              "example": "高雄市六角學院路"
+            },
+            "payment": {
+              "type": "string",
+              "example": "Apple Pay"
+            }
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "quantity": {
+                "type": "number",
+                "example": 10
+              },
+              "id": {
+                "type": "string",
+                "example": "yhHU0M0Aad1bTiA7ITHm"
+              },
+              "origin_price": {
+                "type": "number",
+                "example": 1000
+              },
+              "category": {
+                "type": "string",
+                "example": "測試分類"
+              },
+              "price": {
+                "type": "number",
+                "example": 500
+              },
+              "image": {
+                "type": "string",
+                "example": "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80"
+              },
+              "title": {
+                "type": "string",
+                "example": "測試商品"
+              }
+            }
+          }
+        },
+        "paid": {
+          "type": "boolean",
+          "example": false
+        },
+        "total": {
+          "type": "number",
+          "example": 5000
+        },
+        "createdAt": {
+          "type": "number",
+          "example": 1614764995
+        },
+        "updatedAt": {
+          "type": "number",
+          "example": 1614764995
+        }
+      }
+    },
+    "getOrders": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "tel": {
+                    "type": "string",
+                    "example": "07-5313506"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "六角學院"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "高雄市六角學院路"
+                  },
+                  "payment": {
+                    "type": "string",
+                    "example": "Apple Pay"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "hexschool@hexschool.com"
+                  }
+                }
+              },
+              "createdAt": {
+                "type": "number",
+                "example": 1614764995
+              },
+              "paid": {
+                "type": "boolean",
+                "example": false
+              },
+              "updatedAt": {
+                "type": "number",
+                "example": 1614764995
+              },
+              "total": {
+                "type": "number",
+                "example": 5000
+              },
+              "id": {
+                "type": "string",
+                "example": "8IIgLIdV2X19WAvEGvXQ"
+              },
+              "quantity": {
+                "type": "number",
+                "example": 10
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "origin_price": {
+                      "type": "number",
+                      "example": 1000
+                    },
+                    "id": {
+                      "type": "string",
+                      "example": "yhHU0M0Aad1bTiA7ITHm"
+                    },
+                    "category": {
+                      "type": "string",
+                      "example": "測試分類"
+                    },
+                    "image": {
+                      "type": "string",
+                      "example": "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80"
+                    },
+                    "price": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "測試商品"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "editOrders": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "updatedAt": {
+                "type": "number",
+                "example": 1615185656813
+              },
+              "id": {
+                "type": "string",
+                "example": "6kMabBcg11u75Rx8Ochg"
+              },
+              "user": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "123@gmail.com"
+                  },
+                  "tel": {
+                    "type": "string",
+                    "example": "0912345678"
+                  },
+                  "payment": {
+                    "type": "string",
+                    "example": "Google Pay"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "ray"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "xxxx"
+                  }
+                }
+              },
+              "total": {
+                "type": "number",
+                "example": 500
+              },
+              "createdAt": {
+                "type": "number",
+                "example": 1615185204
+              },
+              "paid": {
+                "type": "boolean",
+                "example": true
+              },
+              "quantity": {
+                "type": "number",
+                "example": 10
+              },
+              "orders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                      "example": "測試分類"
+                    },
+                    "price": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "測試商品"
+                    },
+                    "image": {
+                      "type": "string",
+                      "example": "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80"
+                    },
+                    "id": {
+                      "type": "string",
+                      "example": "yhHU0M0Aad1bTiA7ITHm"
+                    },
+                    "origin_price": {
+                      "type": "number",
+                      "example": 1000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteOrders": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "object",
+                "properties": {
+                  "tel": {
+                    "type": "string",
+                    "example": "07-5313506"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "六角學院"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "高雄市六角學院路"
+                  },
+                  "payment": {
+                    "type": "string",
+                    "example": "Apple Pay"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "hexschool@hexschool.com"
+                  }
+                }
+              },
+              "createdAt": {
+                "type": "number",
+                "example": 1614764995
+              },
+              "paid": {
+                "type": "boolean",
+                "example": false
+              },
+              "updatedAt": {
+                "type": "number",
+                "example": 1614764995
+              },
+              "total": {
+                "type": "number",
+                "example": 5000
+              },
+              "id": {
+                "type": "string",
+                "example": "8IIgLIdV2X19WAvEGvXQ"
+              },
+              "quantity": {
+                "type": "number",
+                "example": 10
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "origin_price": {
+                      "type": "number",
+                      "example": 1000
+                    },
+                    "id": {
+                      "type": "string",
+                      "example": "yhHU0M0Aad1bTiA7ITHm"
+                    },
+                    "category": {
+                      "type": "string",
+                      "example": "測試分類"
+                    },
+                    "image": {
+                      "type": "string",
+                      "example": "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80"
+                    },
+                    "price": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "測試商品"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteOrdersAll": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "orders": {
+          "type": "array",
+          "items": {}
+        },
+        "message": {
+          "type": "string",
+          "example": "購物車產品已全部清空。 (*´▽`*)"
+        }
+      }
+    },
+    "deleteCartError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "您輸入的購物車 ID 不存在 ((((；゜Д゜)))"
+        }
+      }
+    },
+    "deleteCartAllError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "購物車內已經沒有商品了 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "editOrdersError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "找不到該筆訂單，因此無法修改訂單狀態 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "ordersUserError": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ordersUserDataError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "客戶資訊尚未填寫 ((((；゜Д゜)))"
+        }
+      }
+    },
+    "ordersError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "當前購物車內沒有產品，所以無法送出訂單 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "deleteOrdersError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "找不到該筆訂單，因此無法刪除 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "deleteOrdersAllError": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "目前訂單列表沒有任何東西 RRR ((((；゜Д゜)))"
+        }
+      }
+    },
+    "checkAPIPath": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "請確認 API Path 是否已申請 (っ˘ω˘ς )"
+        }
+      }
+    },
+    "checkPolicyAPI": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "請確認 API Path 是否為本人使用。 ((((；゜Д゜)))"
+        }
+      }
+    }
+  }
+}
